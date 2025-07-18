@@ -1,5 +1,6 @@
 import { DynamoDBDocumentClient, GetCommand, PutCommand, ScanCommand, BatchGetCommand } from "@aws-sdk/lib-dynamodb";
 import axios from "axios";
+import { v4 as uuidv4 } from 'uuid';
 
 export function createItemResolver(dynamodb: DynamoDBDocumentClient) {
     return {
@@ -81,6 +82,35 @@ export function createArticleResolver(dynamodb: DynamoDBDocumentClient) {
                 };
             }).filter(Boolean);
         },
-      }
+      },
+      Mutation: {
+        createArticle: async (_: any, articleData: any) => {
+          // Generate a unique ID (you can use UUID or timestamp-based ID)
+          const id = uuidv4();
+          
+          // Prepare the article with default values
+          const article = {
+            id,
+            title: articleData.title,
+            summary: articleData.summary,
+            content: articleData.content,
+            coverImage: articleData.coverImage || "https://picsum.photos/600/300",
+            date: articleData.date || new Date().toISOString(),
+            views: articleData.views || 0,
+            likes: articleData.likes || 0,
+            comments: articleData.comments || 0,
+            shares: articleData.shares || 0,
+          };
+
+          // Save to DynamoDB
+          const params = {
+            TableName: "Articles",
+            Item: article
+          };
+          await dynamodb.send(new PutCommand(params));
+          
+          return article;
+        },
+      },
     };
   }

@@ -29,6 +29,18 @@ export const typeDefs = `#graphql
 
     type Mutation {
         putItem(id: ID!, name: String!): Item
+        
+        createArticle(
+            title: String!
+            summary: String!
+            content: String!
+            coverImage: String
+            date: String
+            views: Int
+            likes: Int
+            comments: Int
+            shares: Int
+            ): Article!
     }
 `;
 
@@ -48,6 +60,5 @@ export const typeDefs = `#graphql
 // `); 
 
 
-  
-  
-  
+
+
