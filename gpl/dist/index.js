@@ -26,9 +26,13 @@ var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__ge
 var import_express = __toESM(require("express"));
 var import_express_graphql = require("express-graphql");
 var import_graphql = require("graphql");
-var import_aws_sdk = __toESM(require("aws-sdk"));
-import_aws_sdk.default.config.update({ region: "us-west-2" });
-var dynamodb = new import_aws_sdk.default.DynamoDB.DocumentClient({ endpoint: "http://localhost:8000" });
+var import_client_dynamodb = require("@aws-sdk/client-dynamodb");
+var import_lib_dynamodb = require("@aws-sdk/lib-dynamodb");
+var client = new import_client_dynamodb.DynamoDBClient({
+  region: "us-west-2",
+  endpoint: "http://localhost:8000"
+});
+var dynamodb = import_lib_dynamodb.DynamoDBDocumentClient.from(client);
 var schema = (0, import_graphql.buildSchema)(`
   type Item {
     id: ID!
@@ -47,7 +51,7 @@ var root = {
       TableName: "Items",
       Key: { id }
     };
-    const result = await dynamodb.get(params).promise();
+    const result = await dynamodb.send(new import_lib_dynamodb.GetCommand(params));
     return result.Item;
   },
   putItem: async ({ id, name }) => {
@@ -55,7 +59,7 @@ var root = {
       TableName: "Items",
       Item: { id, name }
     };
-    await dynamodb.put(params).promise();
+    await dynamodb.send(new import_lib_dynamodb.PutCommand(params));
     return { id, name };
   }
 };

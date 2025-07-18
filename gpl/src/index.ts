@@ -46,4 +46,12 @@ const root = {
 };
 
 const app = express();
-app.use("/graphql", graphql
+app.use("/graphql", graphqlHTTP({
+    schema,
+    rootValue: root,
+    graphiql: true
+}));
+
+app.listen(4000, () => {
+    console.log("Running on http://localhost:4000/graphql");
+});

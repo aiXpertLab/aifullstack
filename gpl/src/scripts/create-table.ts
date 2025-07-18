@@ -1,7 +1,9 @@
-import AWS from "aws-sdk";
+import { DynamoDBClient, CreateTableCommand } from "@aws-sdk/client-dynamodb";
 
-AWS.config.update({ region: "us-west-2" });
-const dynamodb = new AWS.DynamoDB({ endpoint: "http://localhost:8000" });
+const client = new DynamoDBClient({
+    region: "us-west-2",
+    endpoint: "http://localhost:8000"
+});
 
 const params = {
     TableName: "Items",
@@ -13,10 +15,13 @@ const params = {
     }
 };
 
-dynamodb.createTable(params, (err, data) => {
-    if (err) {
-        console.error("Unable to create table. Error:", err);
-    } else {
+async function createTable() {
+    try {
+        const data = await client.send(new CreateTableCommand(params));
         console.log("Created table. Table description:", data);
+    } catch (err) {
+        console.error("Unable to create table. Error:", err);
     }
-});
+}
+
+createTable();
