@@ -7,8 +7,8 @@ const client = new DynamoDBClient({
 
 const params = {
     TableName: "Items",
-    KeySchema: [{ AttributeName: "id", KeyType: "HASH" }],
-    AttributeDefinitions: [{ AttributeName: "id", AttributeType: "S" }],
+    KeySchema: [{ AttributeName: "id", KeyType: "HASH" as const }],
+    AttributeDefinitions: [{ AttributeName: "id", AttributeType: "S" as const }],
     ProvisionedThroughput: {
         ReadCapacityUnits: 1,
         WriteCapacityUnits: 1

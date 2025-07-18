@@ -25,14 +25,9 @@ var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__ge
 // src/index.ts
 var import_express = __toESM(require("express"));
 var import_express_graphql = require("express-graphql");
+
+// src/graphql/schema.ts
 var import_graphql = require("graphql");
-var import_client_dynamodb = require("@aws-sdk/client-dynamodb");
-var import_lib_dynamodb = require("@aws-sdk/lib-dynamodb");
-var client = new import_client_dynamodb.DynamoDBClient({
-  region: "us-west-2",
-  endpoint: "http://localhost:8000"
-});
-var dynamodb = import_lib_dynamodb.DynamoDBDocumentClient.from(client);
 var schema = (0, import_graphql.buildSchema)(`
   type Item {
     id: ID!
@@ -45,29 +40,46 @@ var schema = (0, import_graphql.buildSchema)(`
     putItem(id: ID!, name: String!): Item
   }
 `);
-var root = {
-  getItem: async ({ id }) => {
-    const params = {
-      TableName: "Items",
-      Key: { id }
-    };
-    const result = await dynamodb.send(new import_lib_dynamodb.GetCommand(params));
-    return result.Item;
-  },
-  putItem: async ({ id, name }) => {
-    const params = {
-      TableName: "Items",
-      Item: { id, name }
-    };
-    await dynamodb.send(new import_lib_dynamodb.PutCommand(params));
-    return { id, name };
-  }
-};
+
+// src/resolvers/itemResolver.ts
+var import_lib_dynamodb = require("@aws-sdk/lib-dynamodb");
+function createItemResolver(dynamodb2) {
+  return {
+    getItem: async ({ id }) => {
+      const params = {
+        TableName: "Items",
+        Key: { id }
+      };
+      const result = await dynamodb2.send(new import_lib_dynamodb.GetCommand(params));
+      return result.Item;
+    },
+    putItem: async ({ id, name }) => {
+      const params = {
+        TableName: "Items",
+        Item: { id, name }
+      };
+      await dynamodb2.send(new import_lib_dynamodb.PutCommand(params));
+      return { id, name };
+    }
+  };
+}
+
+// src/db/dynamodbClient.ts
+var import_client_dynamodb = require("@aws-sdk/client-dynamodb");
+var import_lib_dynamodb2 = require("@aws-sdk/lib-dynamodb");
+var client = new import_client_dynamodb.DynamoDBClient({
+  region: "us-west-2",
+  endpoint: "http://localhost:8000"
+});
+var dynamodb = import_lib_dynamodb2.DynamoDBDocumentClient.from(client);
+
+// src/index.ts
+var root = createItemResolver(dynamodb);
 var app = (0, import_express.default)();
 app.use("/graphql", (0, import_express_graphql.graphqlHTTP)({
   schema,
   rootValue: root,
-  graphiql: true
+  graphiql: false
 }));
 app.listen(4e3, () => {
   console.log("Running on http://localhost:4000/graphql");

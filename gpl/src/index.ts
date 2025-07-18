@@ -1,49 +1,10 @@
 import express from "express";
 import { graphqlHTTP } from "express-graphql";
-import { buildSchema } from "graphql";
-import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
-import { DynamoDBDocumentClient, GetCommand, PutCommand } from "@aws-sdk/lib-dynamodb";
+import { schema } from "./graphql/schema";
+import { createItemResolver } from "./resolvers/itemResolver";
+import { dynamodb } from "./db/dynamodbClient";
 
-// Configure DynamoDB Local
-const client = new DynamoDBClient({
-    region: "us-west-2",
-    endpoint: "http://localhost:8000"
-});
-const dynamodb = DynamoDBDocumentClient.from(client);
-
-// GraphQL schema
-const schema = buildSchema(`
-  type Item {
-    id: ID!
-    name: String!
-  }
-  type Query {
-    getItem(id: ID!): Item
-  }
-  type Mutation {
-    putItem(id: ID!, name: String!): Item
-  }
-`);
-
-// Resolvers
-const root = {
-    getItem: async ({ id }: { id: string }) => {
-        const params = {
-            TableName: "Items",
-            Key: { id }
-        };
-        const result = await dynamodb.send(new GetCommand(params));
-        return result.Item;
-    },
-    putItem: async ({ id, name }: { id: string, name: string }) => {
-        const params = {
-            TableName: "Items",
-            Item: { id, name }
-        };
-        await dynamodb.send(new PutCommand(params));
-        return { id, name };
-    }
-};
+const root = createItemResolver(dynamodb);
 
 const app = express();
 app.use("/graphql", graphqlHTTP({
