@@ -19,7 +19,7 @@ const ARTICLES_QUERY = gql`
   }
 `
 
-const API_SUMMARIZE_URL = 'http://localhost:8000/summarize'
+const API_SUMMARIZE_URL = 'http://localhost:8080/v1/summarize'
 
 export default function Analysis() {
   const { data, loading, error } = useQuery(ARTICLES_QUERY)
