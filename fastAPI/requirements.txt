@@ -1,0 +1,11 @@
+fastapi
+uvicorn
+chromadb
+sentence-transformers
+pymongo 
+transformers
+torch
+pytest
+pytest-asyncio
+httpx
+pytest-cov 

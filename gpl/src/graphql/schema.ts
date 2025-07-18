@@ -24,6 +24,7 @@ export const typeDefs = `#graphql
     type Query {
         getArticle(id: ID!): Article
         listArticles: [Article!]!
+        semanticSearch(query: String!, topK: Int): [Article!]!
     }
 
     type Mutation {

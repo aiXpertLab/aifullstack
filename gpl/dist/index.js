@@ -5605,6 +5605,7 @@ var typeDefs3 = `#graphql
     type Query {
         getArticle(id: ID!): Article
         listArticles: [Article!]!
+        semanticSearch(query: String!, topK: Int): [Article!]!
     }
 
     type Mutation {
@@ -5614,6 +5615,7 @@ var typeDefs3 = `#graphql
 
 // src/resolvers/itemResolver.ts
 var import_lib_dynamodb = require("@aws-sdk/lib-dynamodb");
+var import_axios = __toESM(require("axios"));
 function createArticleResolver(dynamodb2) {
   return {
     Query: {
@@ -5626,6 +5628,45 @@ function createArticleResolver(dynamodb2) {
         const params = { TableName: "Articles" };
         const result = await dynamodb2.send(new import_lib_dynamodb.ScanCommand(params));
         return result.Items || [];
+      },
+      semanticSearch: async (_, { query, topK }) => {
+        const response = await import_axios.default.post("http://localhost:8080/v1/search", {
+          query,
+          top_k: topK || 5
+        });
+        const { article_ids, scores, embeddings, metadatas } = response.data;
+        const batchGetParams = {
+          RequestItems: {
+            Articles: {
+              Keys: article_ids.map((id) => ({ id }))
+            }
+          }
+        };
+        const batchResult = await dynamodb2.send(new import_lib_dynamodb.BatchGetCommand(batchGetParams));
+        const articles = batchResult.Responses?.Articles || [];
+        const idToArticle = Object.fromEntries(articles.map((a) => [a.id, a]));
+        const idToScore = Object.fromEntries(article_ids.map((id, i) => [id, scores[i]]));
+        const idToEmbedding = Object.fromEntries(article_ids.map((id, i) => [id, embeddings[i]]));
+        const idToMetadata = Object.fromEntries(article_ids.map((id, i) => [id, metadatas[i]]));
+        return article_ids.map((id) => {
+          const a = idToArticle[id];
+          if (!a) return null;
+          return {
+            id: a.id,
+            title: a.title,
+            summary: a.summary,
+            content: a.content,
+            coverImage: a.coverImage,
+            date: a.date,
+            views: a.views,
+            likes: a.likes,
+            comments: a.comments,
+            shares: a.shares,
+            score: idToScore[id],
+            embedding: idToEmbedding[id],
+            metadata: idToMetadata[id]
+          };
+        }).filter(Boolean);
       }
     }
   };
