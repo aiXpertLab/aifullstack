@@ -17,12 +17,18 @@
         "@as-integrations/express5": "^1.1.2",
         "@aws-sdk/client-dynamodb": "^3.848.0",
         "@aws-sdk/lib-dynamodb": "^3.848.0",
+        "@mozilla/readability": "^0.6.0",
         "express": "^5.1.0",
-        "graphql": "^16.11.0"
+        "graphql": "^16.11.0",
+        "jsdom": "^26.1.0",
+        "node-fetch": "^3.3.2",
+        "rss-parser": "^3.13.0"
     },
     "devDependencies": {
         "@types/express": "^5.0.3",
+        "@types/jsdom": "^21.1.7",
         "@types/node": "^24.0.14",
+        "tsconfig-paths": "^4.2.0",
         "tsup": "^8.5.0",
         "typescript": "^5.8.3"
     }

@@ -5,7 +5,7 @@ const client = new DynamoDBClient({
     endpoint: "http://localhost:8000"
 });
 
-const params = {
+const itemsParams = {
     TableName: "Items",
     KeySchema: [{ AttributeName: "id", KeyType: "HASH" as const }],
     AttributeDefinitions: [{ AttributeName: "id", AttributeType: "S" as const }],
@@ -15,13 +15,32 @@ const params = {
     }
 };
 
-async function createTable() {
+const articlesParams = {
+    TableName: "Articles",
+    KeySchema: [{ AttributeName: "id", KeyType: "HASH" as const }],
+    AttributeDefinitions: [{ AttributeName: "id", AttributeType: "S" as const }],
+    ProvisionedThroughput: {
+        ReadCapacityUnits: 1,
+        WriteCapacityUnits: 1
+    }
+};
+
+async function createTable(params: any) {
     try {
         const data = await client.send(new CreateTableCommand(params));
-        console.log("Created table. Table description:", data);
-    } catch (err) {
-        console.error("Unable to create table. Error:", err);
+        console.log(`Created table ${params.TableName}. Table description:`, data);
+    } catch (err: any) {
+        if (err.name === "ResourceInUseException") {
+            console.log(`Table ${params.TableName} already exists.`);
+        } else {
+            console.error(`Unable to create table ${params.TableName}. Error:`, err);
+        }
     }
 }
 
-createTable();
+async function main() {
+    await createTable(itemsParams);
+    await createTable(articlesParams);
+}
+
+main();
