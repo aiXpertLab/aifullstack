@@ -1669,6 +1669,7 @@ var require_lodash = __commonJS({
 
 // src/index.ts
 var import_express = __toESM(require("express"));
+var import_cors = __toESM(require("cors"));
 var import_server = require("@apollo/server");
 var import_express5 = require("@as-integrations/express5");
 
@@ -5579,34 +5580,52 @@ function makeExecutableSchema({ typeDefs: typeDefs4, resolvers: resolvers2 = {},
 
 // src/graphql/schema.ts
 var typeDefs3 = `#graphql
-  type Item {
-    id: ID!
-    name: String!
-  }
-  type Query {
-    getItem(id: ID!): Item
-  }
-  type Mutation {
-    putItem(id: ID!, name: String!): Item
-  }
+    type Item {
+        id: ID!
+        name: String!
+    }
+
+
+    type Article {
+        id: ID!
+        title: String!
+        summary: String!
+        content: String!
+        coverImage: String!
+        date: String!
+        views: Int!
+        likes: Int!
+        comments: Int!
+        shares: Int!
+        score: Float
+        embedding: [Float]
+    }
+
+
+    type Query {
+        getArticle(id: ID!): Article
+        listArticles: [Article!]!
+    }
+
+    type Mutation {
+        putItem(id: ID!, name: String!): Item
+    }
 `;
 
 // src/resolvers/itemResolver.ts
 var import_lib_dynamodb = require("@aws-sdk/lib-dynamodb");
-function createItemResolver(dynamodb2) {
+function createArticleResolver(dynamodb2) {
   return {
     Query: {
-      getItem: async (_, { id }) => {
-        const params = { TableName: "Items", Key: { id } };
+      getArticle: async (_, { id }) => {
+        const params = { TableName: "Articles", Key: { id } };
         const result = await dynamodb2.send(new import_lib_dynamodb.GetCommand(params));
         return result.Item;
-      }
-    },
-    Mutation: {
-      putItem: async (_, { id, name }) => {
-        const params = { TableName: "Items", Item: { id, name } };
-        await dynamodb2.send(new import_lib_dynamodb.PutCommand(params));
-        return { id, name };
+      },
+      listArticles: async () => {
+        const params = { TableName: "Articles" };
+        const result = await dynamodb2.send(new import_lib_dynamodb.ScanCommand(params));
+        return result.Items || [];
       }
     }
   };
@@ -5622,10 +5641,11 @@ var client = new import_client_dynamodb.DynamoDBClient({
 var dynamodb = import_lib_dynamodb2.DynamoDBDocumentClient.from(client);
 
 // src/index.ts
-var resolvers = createItemResolver(dynamodb);
+var resolvers = createArticleResolver(dynamodb);
 var schema = makeExecutableSchema({ typeDefs: typeDefs3, resolvers });
 async function startServer() {
   const app = (0, import_express.default)();
+  app.use((0, import_cors.default)());
   const server = new import_server.ApolloServer({ schema });
   await server.start();
   app.use(import_express.default.json());

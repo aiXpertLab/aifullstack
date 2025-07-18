@@ -1,16 +1,18 @@
 import express from "express";
+import cors from "cors";
 import { ApolloServer } from "@apollo/server";
 import { expressMiddleware } from "@as-integrations/express5";
 import { makeExecutableSchema } from "@graphql-tools/schema";
 import { typeDefs } from "./graphql/schema";
-import { createItemResolver } from "./resolvers/itemResolver";
+import { createArticleResolver } from "./resolvers/itemResolver";
 import { dynamodb } from "./db/dynamodbClient";
 
-const resolvers = createItemResolver(dynamodb);
+const resolvers = createArticleResolver(dynamodb);
 const schema = makeExecutableSchema({ typeDefs, resolvers });
 
 async function startServer() {
     const app = express();
+    app.use(cors());
     const server = new ApolloServer({ schema });
     await server.start();
     app.use(express.json());
