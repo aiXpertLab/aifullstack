@@ -19,14 +19,19 @@
         "@aws-sdk/lib-dynamodb": "^3.848.0",
         "@mozilla/readability": "^0.6.0",
         "@types/cors": "^2.8.19",
+        "@types/ws": "^8.18.1",
         "axios": "^1.10.0",
         "cors": "^2.8.5",
         "express": "^5.1.0",
         "graphql": "^16.11.0",
+        "graphql-ws": "^6.0.6",
         "jsdom": "^26.1.0",
         "mongoose": "^8.16.4",
         "node-fetch": "^3.3.2",
-        "rss-parser": "^3.13.0"
+        "rss-parser": "^3.13.0",
+        "subscriptions-transport-ws": "^0.11.0",
+        "ws": "^8.18.3",
+        "yahoo-finance2": "^2.13.3"
     },
     "devDependencies": {
         "@types/express": "^5.0.3",

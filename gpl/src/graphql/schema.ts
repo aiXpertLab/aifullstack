@@ -42,6 +42,36 @@ export const typeDefs = `#graphql
             shares: Int
             ): Article!
     }
+
+      type StockPrice {
+        symbol: String!
+        price: Float!
+        change: Float!
+        changePercent: Float!
+        timestamp: String!
+    }
+
+
+    type Subscription {
+        articleCreated: ArticleResult!
+        stockPrice(symbol: String!): StockPrice!
+    }
+
+  type ArticleResult {
+    id: ID!
+    title: String!
+    summary: String
+    content: String
+    coverImage: String
+    date: String
+    views: Int
+    likes: Int
+    comments: Int
+    shares: Int
+    score: Float
+    embedding: [Float]
+    metadata: String
+  }
 `;
 
 // import { buildSchema } from "graphql";

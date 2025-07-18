@@ -5578,6 +5578,10 @@ function makeExecutableSchema({ typeDefs: typeDefs4, resolvers: resolvers2 = {},
   return schema2;
 }
 
+// src/index.ts
+var import_http = require("http");
+var import_ws = require("ws");
+
 // src/graphql/schema.ts
 var typeDefs3 = `#graphql
     type Item {
@@ -5623,6 +5627,36 @@ var typeDefs3 = `#graphql
             shares: Int
             ): Article!
     }
+
+      type StockPrice {
+        symbol: String!
+        price: Float!
+        change: Float!
+        changePercent: Float!
+        timestamp: String!
+    }
+
+
+    type Subscription {
+        articleCreated: ArticleResult!
+        stockPrice(symbol: String!): StockPrice!
+    }
+
+  type ArticleResult {
+    id: ID!
+    title: String!
+    summary: String
+    content: String
+    coverImage: String
+    date: String
+    views: Int
+    likes: Int
+    comments: Int
+    shares: Int
+    score: Float
+    embedding: [Float]
+    metadata: String
+  }
 `;
 
 // src/resolvers/itemResolver.ts
@@ -5760,6 +5794,36 @@ function createArticleResolver(dynamodb2) {
   };
 }
 
+// src/resolvers/stockResolver.ts
+var import_yahoo_finance2 = __toESM(require("yahoo-finance2"));
+function createStockResolver() {
+  return {
+    Subscription: {
+      stockPrice: {
+        subscribe: async function* (_, { symbol }) {
+          while (true) {
+            try {
+              const quote = await import_yahoo_finance2.default.quote(symbol);
+              yield {
+                stockPrice: {
+                  symbol: quote.symbol,
+                  price: quote.regularMarketPrice,
+                  change: quote.regularMarketChange,
+                  changePercent: quote.regularMarketChangePercent,
+                  timestamp: (/* @__PURE__ */ new Date()).toISOString()
+                }
+              };
+            } catch (error) {
+              console.error("Error fetching stock price:", error);
+            }
+            await new Promise((resolve) => setTimeout(resolve, 5e3));
+          }
+        }
+      }
+    }
+  };
+}
+
 // src/db/dynamodbClient.ts
 var import_client_dynamodb = require("@aws-sdk/client-dynamodb");
 var import_lib_dynamodb2 = require("@aws-sdk/lib-dynamodb");
@@ -5770,17 +5834,71 @@ var client = new import_client_dynamodb.DynamoDBClient({
 var dynamodb = import_lib_dynamodb2.DynamoDBDocumentClient.from(client);
 
 // src/index.ts
-var resolvers = createArticleResolver(dynamodb);
+var articleResolvers = createArticleResolver(dynamodb);
+var stockResolvers = createStockResolver();
+var resolvers = {
+  Query: { ...articleResolvers.Query },
+  Mutation: { ...articleResolvers.Mutation },
+  Subscription: { ...stockResolvers.Subscription }
+};
 var schema = makeExecutableSchema({ typeDefs: typeDefs3, resolvers });
 async function startServer() {
   const app = (0, import_express.default)();
   app.use((0, import_cors.default)());
-  const server = new import_server.ApolloServer({ schema });
+  const httpServer = (0, import_http.createServer)(app);
+  const wsServer = new import_ws.WebSocketServer({
+    server: httpServer,
+    path: "/graphql"
+  });
+  wsServer.on("connection", (socket) => {
+    console.log("WebSocket client connected");
+    socket.on("message", (message) => {
+      try {
+        const data = JSON.parse(message.toString());
+        console.log("Received:", data);
+        if (data.type === "subscribe" && data.payload?.query?.includes("stockPrice")) {
+          const symbol = data.payload.variables?.symbol || "AAPL";
+          setInterval(async () => {
+            try {
+              const yahooFinance2 = require("yahoo-finance2");
+              const quote = await yahooFinance2.quote(symbol);
+              const response = {
+                type: "next",
+                id: data.id,
+                payload: {
+                  data: {
+                    stockPrice: {
+                      symbol: quote.symbol,
+                      price: quote.regularMarketPrice,
+                      change: quote.regularMarketChange,
+                      changePercent: quote.regularMarketChangePercent,
+                      timestamp: (/* @__PURE__ */ new Date()).toISOString()
+                    }
+                  }
+                }
+              };
+              socket.send(JSON.stringify(response));
+            } catch (error) {
+              console.error("Error fetching stock price:", error);
+            }
+          }, 5e3);
+        }
+      } catch (error) {
+        console.error("Error handling WebSocket message:", error);
+      }
+    });
+    socket.on("close", () => {
+      console.log("WebSocket client disconnected");
+    });
+  });
+  const server = new import_server.ApolloServer({
+    schema
+  });
   await server.start();
   app.use(import_express.default.json());
   app.use("/graphql", (0, import_express5.expressMiddleware)(server));
-  app.listen(4e3, () => {
-    console.log("\u{1F680} Apollo Server (Express 5) ready at http://localhost:4000/graphql");
+  httpServer.listen(4e3, () => {
+    console.log("\u{1F680} Apollo Server (Express 5 + WebSocket) ready at http://localhost:4000/graphql");
   });
 }
 startServer();
