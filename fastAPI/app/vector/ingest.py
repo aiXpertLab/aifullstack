@@ -2,6 +2,7 @@ import boto3
 from embed import embed_text
 from chroma_utils import add_documents
 
+
 def fetch_all_articles_from_dynamo(region="us-west-2", endpoint="http://localhost:8000", table_name="Articles"):
     """
     Fetch all articles from the DynamoDB 'Articles' table.
@@ -16,6 +17,7 @@ def fetch_all_articles_from_dynamo(region="us-west-2", endpoint="http://localhos
         response = table.scan(ExclusiveStartKey=response['LastEvaluatedKey'])
         articles.extend(response.get('Items', []))
     return articles
+
 
 def main():
     print("Fetching articles from DynamoDB...")
@@ -32,6 +34,7 @@ def main():
     print("Storing embeddings in ChromaDB...")
     add_documents(ids, embeddings, metadatas)
     print("Done.")
+
 
 if __name__ == "__main__":
     main() 
