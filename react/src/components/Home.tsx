@@ -2,7 +2,7 @@ import '../css/App.css'
 
 const trackingStocks = [
     {
-        id: '1', symbol: 'TSLA', name: 'Tesla', price: '$321.87', change: '+11.09 (+3.57%)', chart: '',
+        id: '1', symbol: 'Tesla', name: 'Client', price: 'Revenue: $321.87M', change: '+11.09 (+3.57%)', chart: '',
         videos: [
             { id: 'v1', title: 'TSLA Q1 Report', type: 'Report', stats: '9 videos' },
             { id: 'v2', title: 'Tesla China Market', type: 'Research', stats: '5 videos' },
@@ -11,7 +11,7 @@ const trackingStocks = [
         tags: ['Analysis 21', 'Q&A 130', 'Trading 24', 'Valuation 1'],
     },
     {
-        id: '2', symbol: 'NVDA', name: 'Nvidia', price: '$170.97', change: '+0.27 (+0.16%)', chart: '',
+        id: '2', symbol: 'NNvidia', name: 'Vendor', price: 'Cost: $170M', change: '+0.27 (+0.16%)', chart: '',
         videos: [
             { id: 'v1', title: 'NVDA 25Q2 Report', type: 'Report', stats: '8 videos' },
             { id: 'v2', title: 'NVDA Tech Review', type: 'Research', stats: '4 videos' },
@@ -20,7 +20,7 @@ const trackingStocks = [
         tags: ['Analysis 13', 'Q&A 360', 'Trading 100', 'Valuation 1'],
     },
     {
-        id: '3', symbol: 'PLTR', name: 'Palantir', price: '$151.26', change: '+2.68 (+1.8%)', chart: '',
+        id: '3', symbol: 'Palantir', name: 'Competitor', price: 'Revenue: $151.26M', change: '+2.68 (+1.8%)', chart: '',
         videos: [
             { id: 'v1', title: 'PLTR 25Q2 Report', type: 'Report', stats: '3 videos' },
             { id: 'v2', title: 'PLTR Tech Deep Dive', type: 'Research', stats: '4 videos' },

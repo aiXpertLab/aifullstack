@@ -4,8 +4,8 @@ import '../css/App.css'
 const navItems = [
     { path: '/', label: 'Home', icon: '🏠' },
     { path: '/tracking', label: 'Invoice', icon: '📈' },
-    { path: '/analysis', label: 'Receipt', icon: '📊' },
-    { path: '/school', label: 'Bank Statement', icon: '🎓' },
+    { path: '/analysis', label: 'Bank Statement', icon: '📊' },
+    { path: '/school', label: 'Receipt', icon: '🎓' },
     { path: '/trading', label: 'Payroll', icon: '💹' },
     { path: '/course', label: 'Inventory', icon: '📚' },
     { path: '/report', label: 'Financial Report', icon: '📝' },
